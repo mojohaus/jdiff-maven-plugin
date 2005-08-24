@@ -53,8 +53,6 @@ public class JavadocBean
         
         cmd.setWorkingDirectory( dir.getAbsolutePath() );
         
-        System.out.println(cmd.toString());
-        
         int exitCode = 0;
                 
         try
