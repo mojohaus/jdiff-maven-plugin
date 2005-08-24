@@ -144,18 +144,18 @@ public class JDiffMojo extends AbstractMavenReport
     {
         String srcDir;
         
-        if ( oldTag.equals( "CURRENT" ) )
+        if ( tag.equals( "CURRENT" ) )
         {
             srcDir = project.getBuild().getSourceDirectory();
         }
         else
         {
-            srcDir = outputDirectory + "/" + tag;
-
             doCheckout( tag, outputDirectory + "/" + tag );
+
+            srcDir = outputDirectory + "/" + tag + "/src/main/java";
         }
         
-        return srcDir + "/src/main/java";
+        return srcDir;
     }
     
     private String getProjectSourceDirectory()
@@ -187,14 +187,23 @@ public class JDiffMojo extends AbstractMavenReport
         {
             File dir = new File( checkoutDir );
             
-            if ( !dir.exists() ) 
+            //@todo remove when scm update is to be used
+            if ( dir.exists() ) FileUtils.deleteDirectory( dir );
+            
+            if ( !dir.exists() )
+            {
                 dir.mkdirs();
+                
+                log( "Performing checkout to " + checkoutDir );
+                
+                scm.checkout( tag, checkoutDir );
+            }
             else
-                FileUtils.cleanDirectory( dir );
-            
-            System.out.println( "Performing checkout to " + checkoutDir );
-            
-            scm.checkout( tag, checkoutDir );
+            {
+                log( "Performing update to " + checkoutDir );
+                
+                scm.update( tag, checkoutDir );
+            }
         }
         catch( Exception ex )
         {
@@ -319,6 +328,11 @@ public class JDiffMojo extends AbstractMavenReport
         
         sink.section1_();
         sink.body_();
+    }
+    
+    private void log( String message )
+    {
+        getLog().info( message );
     }
     
     protected MavenProject getProject()

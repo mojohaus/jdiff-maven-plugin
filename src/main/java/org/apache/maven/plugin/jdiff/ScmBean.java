@@ -22,6 +22,7 @@ import org.apache.maven.scm.ScmException;
 import org.apache.maven.scm.ScmFileSet;
 import org.apache.maven.scm.ScmResult;
 import org.apache.maven.scm.command.checkout.CheckOutScmResult;
+import org.apache.maven.scm.command.update.UpdateScmResult;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.provider.ScmProvider;
 import org.apache.maven.scm.provider.svn.repository.SvnScmProviderRepository;
@@ -83,7 +84,34 @@ public class ScmBean
             throw new ScmException( "checkout failed.", ex );
         }
     }
+    
+    public void update( String scmReference, String targetDirectory )
+        throws ScmException
+    {
+        update( scmReference, targetDirectory, null, null );
+    }
+    
+    public void update( String scmReference, String targetDirectory, String includes, String excludes  )
+        throws ScmException
+    {
+        try
+        {
+            ScmRepository repository = getScmRepository( manager, connectionUrl );
 
+            ScmProvider provider = manager.getProviderByRepository( repository );
+            
+            ScmFileSet fileSet = getFileSet( targetDirectory, includes, excludes );
+            
+            UpdateScmResult result = provider.update( repository, fileSet, scmReference );
+
+            if ( !checkResult( result ) ) throw new ScmException( "checkout failed with provider message" );
+        }
+        catch( Exception ex )
+        {
+            throw new ScmException( "checkout failed.", ex );
+        }
+    }
+    
     private ScmRepository getScmRepository( ScmManager manager, String connectionUrl )
         throws ScmException
     {
