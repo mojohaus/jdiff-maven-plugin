@@ -3,9 +3,9 @@
   <parent>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>mojo</artifactId>
-    <version>2-SNAPSHOT</version>
+    <version>3</version>
   </parent>
-  <artifactId>maven-jdiff-plugin</artifactId>
+  <artifactId>jdiff-maven-plugin</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>Maven JDiff Plug-in</name>
