@@ -64,12 +64,12 @@ public class JDiffMojo extends AbstractMavenReport
     private String newTag;
     
     /**
-     * @parameter
+     * @parameter expression="${jdiff.svnUsername}"
      */
     private String svnUsername;
     
     /**
-     * @parameter
+     * @parameter expression="${jdiff.svnPassword}"
      */
     private String svnPassword;
     
