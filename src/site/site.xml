@@ -17,6 +17,10 @@
       <menu name="Mojo">
          <item name="mojo" href="http://mojo.codehaus.org"/>
       </menu>
+      <menu name="JDiff Plugin Quickstart">
+               <item name="Overview" href="howto.html"/>
+               <item name="Sample JDiff Report" href="changes.html"/>
+      </menu>
       ${reports}
    </body>
 </project>
