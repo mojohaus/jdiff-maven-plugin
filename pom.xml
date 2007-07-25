@@ -12,6 +12,10 @@
   <version>0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>Maven JDiff Plug-in</name>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MJDIFF</url>
+  </issueManagement>
   <dependencies>
     <!-- MavenReport -->
     <dependency>
