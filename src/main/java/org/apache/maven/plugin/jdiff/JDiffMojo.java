@@ -20,8 +20,21 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataRetrievalException;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.scm.manager.ScmManager;
@@ -30,281 +43,299 @@ import org.codehaus.doxia.site.renderer.SiteRenderer;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.PathTool;
 
-
-
 /**
  * @goal jdiff
- *
- * @requiresDependencyResolution
- *
- * @description A Maven 2.0 JDiff plugin to generate an api difference report between SCM versions
- *
  * @phase validate
- *
+ * @requiresDependencyResolution compile
+ * @description A Maven 2.0 JDiff plugin to generate an api difference report between SCM versions
  */
-public class JDiffMojo extends AbstractMavenReport
+public class JDiffMojo
+    extends AbstractMavenReport
 {
-    
+
     /**
-     * @parameter expression="${project.groupId}"
+     * @parameter default-value="${project.groupId}"
      * @required
      */
     private String packages;
-    
+
     /**
-     * @parameter default-value="CURRENT"
-     * @required
+     * Version to compare the current code against.
+     * 
+     * @parameter expression="${comparisonVersion}" default-value="(,${project.version})"
      */
-    private String oldTag;
-    
+    private String comparisonVersion;
+
     /**
-     * @parameter default-value="CURRENT"
-     * @required
-     */
-    private String newTag;
-    
-    /**
-     * @parameter expression="${jdiff.svnUsername}"
-     */
-    private String svnUsername;
-    
-    /**
-     * @parameter expression="${jdiff.svnPassword}"
-     */
-    private String svnPassword;
-    
-    /**
-     * @parameter
-     */
-    private String svnTagBase;
-    
-    /**
-     * @parameter expression="${project.build.directory}/site/jdiff"
+     * @parameter default-value="${project.build.directory}/site/jdiff"
      * @required
      * @readonly
      */
     private String outputDirectory;
 
     /**
-     * @parameter expression="${project}"
+     * @parameter default-value="${project}"
      * @required
      * @readonly
      */
     private MavenProject project;
 
     /**
-     * @parameter expression="${plugin.artifacts}"
+     * @parameter default-value="${plugin.artifacts}"
      * @required
      * @readonly
      */
-    private List pluginArtifacts;
+    private List<Artifact> pluginArtifacts;
 
     /**
-     * @parameter expression="${component.org.codehaus.doxia.site.renderer.SiteRenderer}"
-     * @required
-     * @readonly
+     * @component
      */
     private SiteRenderer siteRenderer;
 
     /**
-     * @parameter expression="${component.org.apache.maven.scm.manager.ScmManager}"
-     * @required
-     * @readonly
+     * @component
      */
     private ScmManager scmManager;
 
-    private ScmBean scm;
+    /**
+     * @component
+     */
+    private ArtifactMetadataSource metadataSource;
 
-    
+    /**
+     * @component
+     */
+    private ArtifactFactory factory;
+
+    /**
+     * The local repository where the artifacts are located.
+     * 
+     * @parameter expression="${localRepository}"
+     */
+    private ArtifactRepository localRepository;
+
+    /**
+     * The remote repositories where artifacts are located.
+     * 
+     * @parameter expression="${project.remoteArtifactRepositories}"
+     */
+    private List<ArtifactRepository> remoteRepositories;
+
+    /**
+     * @component
+     */
+    private MavenProjectBuilder mavenProjectBuilder;
+
     public void executeReport( Locale locale ) throws MavenReportException
     {
-        Init();
+        MavenProject lhsProject, rhsProject;
+        try
+        {
+            lhsProject =
+                mavenProjectBuilder.buildFromRepository( getComparisonArtifact(), remoteRepositories, localRepository );
+            rhsProject = project;
+        }
+        catch ( ProjectBuildingException e )
+        {
+            throw new MavenReportException( e.getMessage() );
+        }
+        catch ( MojoFailureException e )
+        {
+            throw new MavenReportException( e.getMessage() );
+        }
+        catch ( MojoExecutionException e )
+        {
+            throw new MavenReportException( e.getMessage() );
+        }
         
-        String oldSource = getSrcDir( oldTag );
+        String lhsTag = lhsProject.getVersion();
+        getLog().debug( "lhsTag:" + lhsTag );
+        String lhsSource = getSrcDir( lhsTag, lhsProject );
         
-        String newSource = getSrcDir( newTag );
+        String rhsTag = rhsProject.getVersion();
+        getLog().debug( "rhsTag:" + rhsTag );
+        String rhsSource = getSrcDir( rhsTag, rhsProject );
+
+        generateJDiffXML( lhsSource, lhsTag );
+        generateJDiffXML( rhsSource, rhsTag );
         
-        generateJDiffXML( oldSource, oldTag );
-        
-        generateJDiffXML( newSource, newTag );
-        
-        generateReport( newSource, oldTag, newTag );
-        
+        generateReport( rhsSource, lhsTag, rhsTag );
         generateSite();
     }
-    
-    private void Init() throws MavenReportException
-    {
-        scm = new ScmBean( scmManager, getConnection() );
-        
-        scm.setSvnParams( svnUsername, svnPassword, svnTagBase );
-    }
-    
-    private String getSrcDir( String tag ) throws MavenReportException
+
+    private String getSrcDir( String version, MavenProject mavenProject )
+        throws MavenReportException
     {
         String srcDir;
-        
-        if ( tag.equals( "CURRENT" ) )
+
+        if ( version.equals( project.getVersion() ) )
         {
             srcDir = project.getBuild().getSourceDirectory();
         }
         else
         {
-            doCheckout( tag, outputDirectory + "/" + tag );
+            doCheckout( version, outputDirectory + "/" + version, mavenProject );
 
-            srcDir = outputDirectory + "/" + tag + "/src/main/java";
+            srcDir = outputDirectory + "/" + version + "/src/main/java";
         }
-        
+
         return srcDir;
     }
-    
-    private String getProjectSourceDirectory()
-    {
-        return PathTool.getRelativePath( project.getBasedir().getAbsolutePath(), project.getBuild().getSourceDirectory() );
-    }
 
-    private String getConnection() throws MavenReportException
+    private String getConnection( MavenProject mavenProject )
+        throws MavenReportException
     {
-        if ( project.getScm() == null ) throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
-        
-        String connection = project.getScm().getConnection();
-        
+        if ( mavenProject.getScm() == null )
+            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
+
+        String connection = mavenProject.getScm().getConnection();
+
         if ( connection != null )
-            if ( connection.length() > 0 ) return connection;
-        
-        connection = project.getScm().getDeveloperConnection();
-        
-        if ( connection == null ) throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
-        
-        if ( connection.length() == 0 ) throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
-        
+        {
+            if ( connection.length() > 0 )
+            {
+                return connection;
+            }
+        }
+        connection = mavenProject.getScm().getDeveloperConnection();
+
+        if ( connection == null )
+        {
+            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
+        }
+        if ( connection.length() == 0 )
+        {
+            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
+        }
         return connection;
     }
-    
-    private void doCheckout( String tag, String checkoutDir ) throws MavenReportException
+
+    private void doCheckout( String tag, String checkoutDir, MavenProject mavenProject )
+        throws MavenReportException
     {
         try
         {
+
             File dir = new File( checkoutDir );
-            
-            //@todo remove when scm update is to be used
-            if ( dir.exists() ) FileUtils.deleteDirectory( dir );
-            
-            if ( !dir.exists() )
+
+            // @todo remove when scm update is to be used
+            if ( /* forceCheckout  */ dir.exists() )
             {
-                dir.mkdirs();
-                
-                log( "Performing checkout to " + checkoutDir );
-                
-                scm.checkout( tag, checkoutDir );
+                FileUtils.deleteDirectory( dir );
+            }
+
+            if ( dir.exists() || dir.mkdirs() )
+            {
+
+                getLog().info( "Performing checkout to " + checkoutDir );
+
+                new ScmBean( scmManager, getConnection( mavenProject ) ).checkout( checkoutDir );
             }
             else
             {
-                log( "Performing update to " + checkoutDir );
-                
-                scm.update( tag, checkoutDir );
+                getLog().info( "Performing update to " + checkoutDir );
+
+                new ScmBean( scmManager, getConnection( mavenProject ) ).update( checkoutDir );
             }
         }
-        catch( Exception ex )
+        catch ( Exception ex )
         {
             throw new MavenReportException( "checkout failed.", ex );
         }
     }
-    
-    private void generateJDiffXML( String srcDir, String tag ) throws MavenReportException
+
+    private void generateJDiffXML( String srcDir, String tag )
+        throws MavenReportException
     {
         JavadocBean javadoc = new JavadocBean();
-        
+
         javadoc.addArgumentPair( "doclet", "jdiff.JDiff" );
-        
+
         javadoc.addArgumentPair( "docletpath", getPluginClasspath() );
-        
+
         javadoc.addArgumentPair( "apiname", tag );
-        
+
         javadoc.addArgumentPair( "apidir", outputDirectory );
-        
+
         javadoc.addArgumentPair( "classpath", getProjectClasspath() );
-        
+
         javadoc.addArgumentPair( "sourcepath", srcDir );
-        
+
         javadoc.addArgument( packages );
-        
+
         javadoc.execute( outputDirectory );
     }
-    
+
     private String getProjectClasspath()
     {
         String cp = "";
-        
-        for( Iterator i=project.getCompileArtifacts().iterator(); i.hasNext(); )
-        {
-            Artifact artifact = (Artifact) i.next();
-            
-            String path = artifact.getFile().getAbsolutePath();
-            
-            cp += ";" + path;
-        }
-        
-        return cp.substring( 1 );
+
+        // for( Artifact artifact : artifacts )
+        // {
+        // String path = artifact.getFile().getAbsolutePath();
+        //
+        // cp += ";" + path;
+        // }
+
+        return cp.length() > 0 ? cp.substring( 1 ) : cp;
     }
-    
+
     private String getPluginClasspath()
     {
         String cp = "";
-        
-        for ( Iterator i=pluginArtifacts.iterator(); i.hasNext(); )
+
+        for ( Artifact artifact : pluginArtifacts )
         {
-            Artifact artifact = (Artifact) i.next();
-            
             cp += ";" + artifact.getFile().getAbsolutePath();
         }
-        
-        return cp.substring( 1 );
+
+        return cp.length() > 0 ? cp.substring( 1 ) : cp;
     }
-    
-    private String getJarLocation( String id ) throws MavenReportException
+
+    private String getJarLocation( String id )
+        throws MavenReportException
     {
-        for ( Iterator i=pluginArtifacts.iterator(); i.hasNext(); )
+        for ( Artifact artifact : pluginArtifacts )
         {
-            Artifact artifact = (Artifact) i.next();
-            
-            if ( artifact.getArtifactId().equals( id ) ) return artifact.getFile().getAbsolutePath();
+            if ( artifact.getArtifactId().equals( id ) )
+                return artifact.getFile().getAbsolutePath();
         }
-        
+
         throw new MavenReportException( "JDiff jar not found in plugin artifacts." );
     }
-    
-    private void generateReport( String srcDir, String oldApi, String newApi ) throws MavenReportException
+
+    private void generateReport( String srcDir, String oldApi, String newApi )
+        throws MavenReportException
     {
         JavadocBean javadoc = new JavadocBean();
-        
+
         javadoc.addArgument( "-private" );
-        
+
         javadoc.addArgumentPair( "d", outputDirectory );
-        
+
         javadoc.addArgumentPair( "sourcepath", srcDir );
-        
+
         javadoc.addArgumentPair( "classpath", getProjectClasspath() );
-        
+
         javadoc.addArgumentPair( "doclet", "jdiff.JDiff" );
-        
+
         javadoc.addArgumentPair( "docletpath", getPluginClasspath() );
-        
+
         javadoc.addArgumentPair( "oldapi", oldApi );
-        
+
         javadoc.addArgumentPair( "newapi", newApi );
-        
+
         javadoc.addArgument( "-stats" );
-        
+
         javadoc.addArgument( packages );
-        
+
         javadoc.execute( outputDirectory );
     }
-    
+
     private void generateSite()
     {
         Sink sink = getSink();
-        
+
         sink.head();
         sink.title();
         sink.text( "JDiff API Difference Report" );
@@ -313,7 +344,7 @@ public class JDiffMojo extends AbstractMavenReport
 
         sink.body();
         sink.section1();
-        
+
         sink.sectionTitle1();
         sink.text( "JDiff API Difference Report" );
         sink.sectionTitle1_();
@@ -325,16 +356,11 @@ public class JDiffMojo extends AbstractMavenReport
         sink.link_();
         sink.text( "." );
         sink.paragraph_();
-        
+
         sink.section1_();
         sink.body_();
     }
-    
-    private void log( String message )
-    {
-        getLog().info( message );
-    }
-    
+
     protected MavenProject getProject()
     {
         return project;
@@ -350,12 +376,12 @@ public class JDiffMojo extends AbstractMavenReport
         return outputDirectory;
     }
 
-    public String getDescription(Locale locale)
+    public String getDescription( Locale locale )
     {
         return "Maven 2.0 JDiff Plugin";
     }
 
-    public String getName(Locale locale)
+    public String getName( Locale locale )
     {
         return "JDiff";
     }
@@ -363,5 +389,72 @@ public class JDiffMojo extends AbstractMavenReport
     public String getOutputName()
     {
         return "jdiff";
+    }
+
+    private Artifact getComparisonArtifact()
+        throws MojoFailureException, MojoExecutionException
+    {
+        // Find the previous version JAR and resolve it, and it's dependencies
+        VersionRange range;
+        try
+        {
+            range = VersionRange.createFromVersionSpec( comparisonVersion );
+        }
+        catch ( InvalidVersionSpecificationException e )
+        {
+            throw new MojoFailureException( "Invalid comparison version: " + e.getMessage() );
+        }
+
+        Artifact previousArtifact;
+        try
+        {
+            previousArtifact =
+                factory.createDependencyArtifact( project.getGroupId(), project.getArtifactId(), range,
+                                                  project.getPackaging(), null, Artifact.SCOPE_COMPILE );
+
+            if ( !previousArtifact.getVersionRange().isSelectedVersionKnown( previousArtifact ) )
+            {
+                getLog().debug( "Searching for versions in range: " + previousArtifact.getVersionRange() );
+                List<ArtifactVersion> availableVersions =
+                    metadataSource.retrieveAvailableVersions( previousArtifact, localRepository,
+                                                              project.getRemoteArtifactRepositories() );
+                filterSnapshots( availableVersions );
+                ArtifactVersion version = range.matchVersion( availableVersions );
+                if ( version != null )
+                {
+                    previousArtifact.selectVersion( version.toString() );
+                }
+            }
+        }
+        catch ( OverConstrainedVersionException e1 )
+        {
+            throw new MojoFailureException( "Invalid comparison version: " + e1.getMessage() );
+        }
+        catch ( ArtifactMetadataRetrievalException e11 )
+        {
+            throw new MojoExecutionException( "Error determining previous version: " + e11.getMessage(), e11 );
+        }
+
+        if ( previousArtifact.getVersion() == null )
+        {
+            getLog().info( "Unable to find a previous version of the project in the repository" );
+        }
+        else
+        {
+            getLog().debug( "Previous version: " + previousArtifact.getVersion() );
+        }
+
+        return previousArtifact;
+    }
+
+    private void filterSnapshots( List<ArtifactVersion> versions )
+    {
+        for ( Iterator<ArtifactVersion> versionIterator = versions.iterator(); versionIterator.hasNext(); )
+        {
+            if ( "SNAPSHOT".equals( versionIterator.next().getQualifier() ) )
+            {
+                versionIterator.remove();
+            }
+        }
     }
 }

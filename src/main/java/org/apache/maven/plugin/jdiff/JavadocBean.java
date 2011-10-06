@@ -35,14 +35,14 @@ public class JavadocBean
     
     public void addArgumentPair( String argKey, String argValue )
     {
-        cmd.createArgument().setValue( "-" + argKey );
+        cmd.createArg().setValue( "-" + argKey );
         
-        cmd.createArgument().setValue( argValue );
+        cmd.createArg().setValue( argValue );
     }
     
     public void addArgument( String arg )
     {
-        cmd.createArgument().setValue( arg );
+        cmd.createArg().setValue( arg );
     }
     
     public void execute( String workingDir ) throws MavenReportException

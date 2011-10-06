@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <artifactId>mojo</artifactId>
-    <groupId>org.codehaus.mojo</groupId>
-    <version>14</version>
-  </parent>
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>mojo-parent</artifactId>
+    <version>28</version>
+  </parent>
   <artifactId>jdiff-maven-plugin</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
@@ -16,6 +16,13 @@
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/MJDIFF</url>
   </issueManagement>
+  
+  <properties>
+    <mojo.java.target>1.5</mojo.java.target>
+    <mavenVersion>2.0.6</mavenVersion>
+    <scmVersion>1.5</scmVersion>
+  </properties>
+  
   <dependencies>
     <!-- MavenReport -->
     <dependency>
@@ -30,39 +37,24 @@
     </dependency>
     <!-- Maven SCM -->
     <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-invoker</artifactId>
+      <version>2.0.11</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-api</artifactId>
-      <version>1.0-alpha-2</version>
+      <version>${scmVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-clearcase</artifactId>
-      <version>1.0-alpha-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-cvs</artifactId>
-      <version>1.0-alpha-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-perforce</artifactId>
-      <version>1.0-alpha-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-svn</artifactId>
-      <version>1.0-alpha-2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.scm</groupId>
-      <artifactId>maven-scm-provider-starteam</artifactId>
-      <version>1.0-alpha-2</version>
+      <artifactId>maven-scm-provider-svnexe</artifactId>
+      <version>${scmVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.scm</groupId>
       <artifactId>maven-scm-manager-plexus</artifactId>
-      <version>1.0-alpha-2</version>
+      <version>${scmVersion}</version>
     </dependency>
 
     <dependency>
@@ -73,7 +65,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
-      <version>2.0-alpha-3</version>
+      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>plexus</groupId>

@@ -18,6 +18,7 @@ package org.apache.maven.plugin.jdiff;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.maven.scm.ScmException;
 import org.apache.maven.scm.ScmFileSet;
 import org.apache.maven.scm.ScmResult;
@@ -25,7 +26,6 @@ import org.apache.maven.scm.command.checkout.CheckOutScmResult;
 import org.apache.maven.scm.command.update.UpdateScmResult;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.provider.ScmProvider;
-import org.apache.maven.scm.provider.svn.repository.SvnScmProviderRepository;
 import org.apache.maven.scm.repository.ScmRepository;
 
 
@@ -35,13 +35,6 @@ public class ScmBean
 
     private String connectionUrl;
 
-    private String username;
-
-    private String password;
-
-    private String tagBase;
-
-
     public ScmBean( ScmManager manager, String connectionUrl )
     {
         this.manager = manager;
@@ -49,22 +42,13 @@ public class ScmBean
         this.connectionUrl = connectionUrl;
     }
 
-    public void setSvnParams( String username, String password, String tagBase )
-    {
-        this.username = username;
-        
-        this.password = password;
-        
-        this.tagBase = tagBase;
-    }
-
-    public void checkout( String scmReference, String outputDirectory )
+    public void checkout( String outputDirectory )
         throws ScmException
     {
-        checkout( scmReference, outputDirectory, null, null );
+        checkout( outputDirectory, null, null );
     }
 
-    public void checkout( String scmReference, String outputDirectory, String includes, String excludes )
+    public void checkout( String outputDirectory, String includes, String excludes )
         throws ScmException
     {
         try
@@ -75,9 +59,12 @@ public class ScmBean
 
             ScmFileSet fileSet = getFileSet( outputDirectory, includes, excludes );
 
-            CheckOutScmResult result = provider.checkOut( repository, fileSet, scmReference );
+            CheckOutScmResult result = provider.checkOut( repository, fileSet );
 
-            if ( !checkResult( result ) ) throw new ScmException( "checkout failed with provider message" );
+            if ( !checkResult( result ) ) 
+            {
+                throw new ScmException( "checkout failed with provider message" );
+            }
         }
         catch( Exception ex )
         {
@@ -85,13 +72,13 @@ public class ScmBean
         }
     }
     
-    public void update( String scmReference, String targetDirectory )
+    public void update( String targetDirectory )
         throws ScmException
     {
-        update( scmReference, targetDirectory, null, null );
+        update( targetDirectory, null, null );
     }
     
-    public void update( String scmReference, String targetDirectory, String includes, String excludes  )
+    public void update( String targetDirectory, String includes, String excludes  )
         throws ScmException
     {
         try
@@ -102,9 +89,12 @@ public class ScmBean
             
             ScmFileSet fileSet = getFileSet( targetDirectory, includes, excludes );
             
-            UpdateScmResult result = provider.update( repository, fileSet, scmReference );
+            UpdateScmResult result = provider.update( repository, fileSet );
 
-            if ( !checkResult( result ) ) throw new ScmException( "checkout failed with provider message" );
+            if ( !checkResult( result ) )
+            {
+                throw new ScmException( "checkout failed with provider message" );
+            }
         }
         catch( Exception ex )
         {
@@ -115,36 +105,7 @@ public class ScmBean
     private ScmRepository getScmRepository( ScmManager manager, String connectionUrl )
         throws ScmException
     {
-        ScmRepository repository;
-
-        try
-        {
-            repository = manager.makeScmRepository( connectionUrl );
-
-            if ( repository.getProvider().equals( "svn" ) )
-            {
-                SvnScmProviderRepository svnRepo = (SvnScmProviderRepository) repository.getProviderRepository();
-
-                if ( username != null && username.length() > 0 )
-                {
-                    svnRepo.setUser( username );
-                }
-                if ( password != null && password.length() > 0 )
-                {
-                    svnRepo.setPassword( password );
-                }
-                if ( tagBase != null && tagBase.length() > 0 )
-                {
-                    svnRepo.setTagBase( tagBase );
-                }
-            }
-        }
-        catch ( Exception e )
-        {
-            throw new ScmException( "failed to makeScmRepository.", e );
-        }
-
-        return repository;
+        return  manager.makeScmRepository( connectionUrl );
     }
 
     private ScmFileSet getFileSet( String path, String includes, String excludes ) throws IOException
