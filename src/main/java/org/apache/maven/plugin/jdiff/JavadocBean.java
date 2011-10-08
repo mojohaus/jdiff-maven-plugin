@@ -28,9 +28,9 @@ public class JavadocBean
 {
     private Commandline cmd = new Commandline();
     
-    public JavadocBean()
+    public JavadocBean( String executable )
     {
-        cmd.setExecutable( getJavadocPath() );
+        cmd.setExecutable( executable );
     }
     
     public void addArgumentPair( String argKey, String argValue )
@@ -49,7 +49,10 @@ public class JavadocBean
     {
         File dir = new File( workingDir );
         
-        if ( !dir.exists() ) dir.mkdirs();
+        if ( !dir.exists() ) 
+        {
+            dir.mkdirs();
+        }
         
         cmd.setWorkingDirectory( dir.getAbsolutePath() );
         
@@ -57,17 +60,10 @@ public class JavadocBean
                 
         try
         {
+            System.out.print( cmd.toString() );
             exitCode = CommandLineUtils.executeCommandLine( cmd, 
                                                             new DefaultConsumer(), 
                                                             new DefaultConsumer() );
-            
-            //Process p = Runtime.getRuntime().exec( cmd.toString() );
-            
-            //p.waitFor();
-            
-            //System.out.println( IOUtil.toString( p.getInputStream() ) );
-            
-            //exitCode = p.exitValue();
         }
         catch ( Exception ex )
         {
@@ -78,19 +74,5 @@ public class JavadocBean
         {
             throw new MavenReportException( "generate JDiff doclet failed." );
         }
-    }
-
-    private String getJavadocPath()
-    {
-        final String javadocCommand = "javadoc" + ( SystemUtils.IS_OS_WINDOWS ? ".exe" : "" );
-        // For IBM's JDK 1.2
-        final File javadocExe = ( SystemUtils.IS_OS_AIX 
-                                    ? new File( SystemUtils.getJavaHome() + "/../sh", javadocCommand ) 
-                                    : new File( SystemUtils.getJavaHome() + "/../bin", javadocCommand )
-                                );
-
-        //return javadocExe.getAbsolutePath();
-        
-        return "javadoc";
     }
 }
