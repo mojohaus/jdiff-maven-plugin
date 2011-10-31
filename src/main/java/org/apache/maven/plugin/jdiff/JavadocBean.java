@@ -17,7 +17,7 @@ package org.apache.maven.plugin.jdiff;
  */
 
 import java.io.File;
-import org.apache.commons.lang.SystemUtils;
+
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;

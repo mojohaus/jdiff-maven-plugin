@@ -17,26 +17,13 @@ import org.codehaus.plexus.util.FileUtils;
 
 public class JDiffUtils
 {
-    private static Log log;
-    
     private JDiffUtils()
     {
         // hide constructor of utility class
     }
     
-    public static void setLogger( Log log )
-    {
-        JDiffUtils.log = log;
-    }
-
     public static List<String> getProjectSourceRoots( MavenProject p )
     {
-        log.debug("project source roots");
-        for( Object x : p.getCompileSourceRoots() )
-        {
-            log.debug( "getCompileSourceRoots: " + x );
-        }
-
         if ( "pom".equals( p.getPackaging().toLowerCase() ) )
         {
             return Collections.emptyList();

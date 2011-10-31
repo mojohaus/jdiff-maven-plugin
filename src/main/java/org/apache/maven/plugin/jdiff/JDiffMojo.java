@@ -41,8 +41,6 @@ import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.profiles.DefaultProfileManager;
-import org.apache.maven.profiles.ProfileManager;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
@@ -74,11 +72,21 @@ public class JDiffMojo
     private String javadocExecutable;
     
     /**
-     * Version to compare the current code against.
+     * Version to compare the base code against.
+     * This will be the left-hand side of the report. 
      * 
-     * @parameter expression="${comparisonVersion}" default-value="(,${project.version})"
+     * @parameter expression="${jdiff.comparisonVersion}" default-value="(,${project.version})"
      */
     private String comparisonVersion;
+    
+
+    /**
+     * The base code.
+     * This will be the right-hand side of the report.
+     * 
+     * @parameter expression="${jdiff.baseVersion}" default-value="${project.version}"
+     */
+    private String baseVersion;
 
     /**
      * @parameter default-value="${project.reporting.outputDirectory}/jdiff"
@@ -93,6 +101,12 @@ public class JDiffMojo
      * @readonly
      */
     private String buildOutputDirectory;
+    
+    /**
+     * @parameter default-value="${project.build.outputDirectory}/jdiff"
+     * @readonly
+     */
+    private File workingDirectory;
 
     /**
      * The current build session instance. This is used for
@@ -154,14 +168,11 @@ public class JDiffMojo
     
     public void executeReport( Locale locale ) throws MavenReportException
     {
-        //tmp
-        JDiffUtils.setLogger( getLog() );
-        
         MavenProject lhsProject, rhsProject;
         try
         {
-            lhsProject = resolveProject( getComparisonArtifact() );
-            rhsProject = project;
+            lhsProject = resolveProject( comparisonVersion );
+            rhsProject = resolveProject( baseVersion );
         }
         catch ( ProjectBuildingException e )
         {
@@ -177,51 +188,36 @@ public class JDiffMojo
         }
         
         String lhsTag = lhsProject.getVersion();
-        
         String rhsTag = rhsProject.getVersion();
-        String rhsBaseDirectory = getSrcDir( rhsTag, rhsProject );
 
         generateJDiffXML( lhsProject, lhsTag );
         generateJDiffXML( rhsProject, rhsTag );
         
-        generateReport( rhsBaseDirectory, lhsTag, rhsTag );
+        generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
         
         new JDiffReportGenerator().doGenerateReport( getBundle( locale ), getSink() );
     }
     
     
 
-    private MavenProject resolveProject( Artifact comparisonArtifact ) throws MojoFailureException, MojoExecutionException, ProjectBuildingException, MavenReportException
+    private MavenProject resolveProject( String versionSpec ) throws MojoFailureException, MojoExecutionException, ProjectBuildingException, MavenReportException
     {
-        MavenProject externalProject = mavenProjectBuilder.buildFromRepository( getComparisonArtifact(), remoteRepositories, localRepository );
-        
-        String checkoutDirectory = reportingOutputDirectory + "/" + externalProject.getVersion();
-        doCheckout( externalProject.getVersion(), checkoutDirectory, externalProject );
-        
-        ProfileManager profileManager = null;
-        
-        return mavenProjectBuilder.build( new File(checkoutDirectory, "pom.xml"), localRepository, profileManager );
-    }
-
-
-
-    private String getSrcDir( String version, MavenProject mavenProject )
-        throws MavenReportException
-    {
-        String srcDir;
-
-        if ( version.equals( project.getVersion() ) )
+        MavenProject result;
+        if( project.getVersion().equals( versionSpec ) )
         {
-            srcDir = project.getBuild().getSourceDirectory();
+            result = project;
         }
-        else
+        else 
         {
-            doCheckout( version, reportingOutputDirectory + "/" + version, mavenProject );
-
-            srcDir = reportingOutputDirectory + "/" + version + "/src/main/java";
+            Artifact artifact = resolveArtifact( versionSpec );
+            MavenProject externalProject = mavenProjectBuilder.buildFromRepository( artifact, remoteRepositories, localRepository );
+            
+            File checkoutDirectory = new File( workingDirectory , externalProject.getVersion() );
+            doCheckout( externalProject.getVersion(), checkoutDirectory, externalProject );
+            
+            result = mavenProjectBuilder.build( new File(checkoutDirectory, "pom.xml"), localRepository, null );
         }
-
-        return srcDir;
+        return result;
     }
 
     private String getConnection( MavenProject mavenProject )
@@ -252,32 +248,30 @@ public class JDiffMojo
         return connection;
     }
 
-    private void doCheckout( String tag, String checkoutDir, MavenProject mavenProject )
+    private void doCheckout( String tag, File checkoutDir, MavenProject mavenProject )
         throws MavenReportException
     {
         try
         {
 
-            File dir = new File( checkoutDir );
-
             // @todo remove when scm update is to be used
-            if ( /* forceCheckout  */ dir.exists() )
+            if ( /* forceCheckout  */ checkoutDir.exists() )
             {
-                FileUtils.deleteDirectory( dir );
+                FileUtils.deleteDirectory( checkoutDir );
             }
 
-            if ( dir.exists() || dir.mkdirs() )
+            if ( checkoutDir.exists() || checkoutDir.mkdirs() )
             {
 
                 getLog().info( "Performing checkout to " + checkoutDir );
 
-                new ScmBean( scmManager, getConnection( mavenProject ) ).checkout( checkoutDir );
+                new ScmBean( scmManager, getConnection( mavenProject ) ).checkout( checkoutDir.getPath() );
             }
             else
             {
                 getLog().info( "Performing update to " + checkoutDir );
 
-                new ScmBean( scmManager, getConnection( mavenProject ) ).update( checkoutDir );
+                new ScmBean( scmManager, getConnection( mavenProject ) ).update( checkoutDir.getPath() );
             }
         }
         catch ( Exception ex )
@@ -424,14 +418,14 @@ public class JDiffMojo
         return "jdiff";
     }
 
-    private Artifact getComparisonArtifact()
+    private Artifact resolveArtifact( String versionSpec )
         throws MojoFailureException, MojoExecutionException
     {
         // Find the previous version JAR and resolve it, and it's dependencies
         VersionRange range;
         try
         {
-            range = VersionRange.createFromVersionSpec( comparisonVersion );
+            range = VersionRange.createFromVersionSpec( versionSpec );
         }
         catch ( InvalidVersionSpecificationException e )
         {
