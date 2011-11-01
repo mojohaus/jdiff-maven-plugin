@@ -17,6 +17,10 @@
     <url>http://jira.codehaus.org/browse/MJDIFF</url>
   </issueManagement>
   
+  <prerequisites>
+    <maven>${mavenVersion}</maven>
+  </prerequisites>
+  
   <properties>
     <mojo.java.target>1.5</mojo.java.target>
     <mavenVersion>2.0.6</mavenVersion>
@@ -27,9 +31,30 @@
     <!-- Maven Core -->
     <dependency>
       <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
       <artifactId>maven-project</artifactId>
       <version>${mavenVersion}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-toolchain</artifactId>
@@ -41,11 +66,6 @@
       <version>1.5.8</version>
     </dependency>
     <!-- MavenReport -->
-    <dependency>
-      <groupId>doxia</groupId>
-      <artifactId>doxia-sink-api</artifactId>
-      <version>1.0-alpha-4</version>
-    </dependency>
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
