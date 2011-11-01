@@ -29,13 +29,13 @@ import org.apache.maven.scm.provider.ScmProvider;
 import org.apache.maven.scm.repository.ScmRepository;
 
 
-public class ScmBean
+public class ScmRequest
 {
     private ScmManager manager;
 
     private String connectionUrl;
 
-    public ScmBean( ScmManager manager, String connectionUrl )
+    public ScmRequest( ScmManager manager, String connectionUrl )
     {
         this.manager = manager;
         
@@ -136,6 +136,9 @@ public class ScmBean
             
             return false;
         }
-        else return true;
+        else 
+        {
+            return true;
+        }
     }
 }

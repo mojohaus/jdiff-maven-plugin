@@ -265,13 +265,13 @@ public class JDiffMojo
 
                 getLog().info( "Performing checkout to " + checkoutDir );
 
-                new ScmBean( scmManager, getConnection( mavenProject ) ).checkout( checkoutDir.getPath() );
+                new ScmRequest( scmManager, getConnection( mavenProject ) ).checkout( checkoutDir.getPath() );
             }
             else
             {
                 getLog().info( "Performing update to " + checkoutDir );
 
-                new ScmBean( scmManager, getConnection( mavenProject ) ).update( checkoutDir.getPath() );
+                new ScmRequest( scmManager, getConnection( mavenProject ) ).update( checkoutDir.getPath() );
             }
         }
         catch ( Exception ex )
@@ -285,7 +285,7 @@ public class JDiffMojo
     {
         try
         {
-            JavadocBean javadoc = new JavadocBean( getJavadocExecutable() );
+            JavadocRequest javadoc = new JavadocRequest( getJavadocExecutable() );
 
             javadoc.addArgumentPair( "doclet", "jdiff.JDiff" );
 
@@ -336,7 +336,7 @@ public class JDiffMojo
     {
         try
         {
-            JavadocBean javadoc = new JavadocBean( getJavadocExecutable() );
+            JavadocRequest javadoc = new JavadocRequest( getJavadocExecutable() );
 
             javadoc.addArgument( "-private" );
 
