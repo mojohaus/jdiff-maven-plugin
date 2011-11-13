@@ -57,16 +57,13 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
  * @goal jdiff
  * @execute phase="generate-sources"
  * @requiresDependencyResolution compile 
- * @description A Maven 2.0 JDiff plugin to generate an api difference report between SCM versions
+ * @description Mojo's JDiff plugin for Maven 2 & 3 to generate an api difference report between SCM versions
  */
 public class JDiffMojo
     extends AbstractMavenReport
 {
 
     /**
-     * Sets the absolute path of the Javadoc Tool executable to use. Since version 2.5, a mere directory specification
-     * is sufficient to have the plugin use "javadoc" or "javadoc.exe" respectively from this directory.
-     *
      * @parameter expression="${javadocExecutable}"
      */
     private String javadocExecutable;
@@ -81,7 +78,7 @@ public class JDiffMojo
     
 
     /**
-     * The base code.
+     * The base code version.
      * This will be the right-hand side of the report.
      * 
      * @parameter expression="${jdiff.baseVersion}" default-value="${project.version}"
@@ -133,6 +130,9 @@ public class JDiffMojo
     private List<Artifact> pluginArtifacts;
 
     /** @component */
+    private MavenProjectBuilder mavenProjectBuilder;
+
+    /** @component */
     private ToolchainManager toolchainManager;
     
     /** @component */
@@ -161,9 +161,9 @@ public class JDiffMojo
      */
     private List<ArtifactRepository> remoteRepositories;
 
-    /** @component */
-    private MavenProjectBuilder mavenProjectBuilder;
-
+    /**
+     * @parameter
+     */
     private Set<String> packages = new HashSet<String>();
     
     public void executeReport( Locale locale ) throws MavenReportException
@@ -215,7 +215,7 @@ public class JDiffMojo
             File checkoutDirectory = new File( workingDirectory , externalProject.getVersion() );
             doCheckout( externalProject.getVersion(), checkoutDirectory, externalProject );
             
-            result = mavenProjectBuilder.build( new File(checkoutDirectory, "pom.xml"), localRepository, null );
+            result = mavenProjectBuilder.build( new File( checkoutDirectory, "pom.xml" ), localRepository, null );
         }
         return result;
     }
@@ -223,9 +223,11 @@ public class JDiffMojo
     private String getConnection( MavenProject mavenProject )
         throws MavenReportException
     {
-        if ( mavenProject.getScm() == null )
+        if ( mavenProject.getScm() == null ) 
+        {
             throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
-
+        }
+            
         String connection = mavenProject.getScm().getConnection();
 
         if ( connection != null )
@@ -237,11 +239,7 @@ public class JDiffMojo
         }
         connection = mavenProject.getScm().getDeveloperConnection();
 
-        if ( connection == null )
-        {
-            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
-        }
-        if ( connection.length() == 0 )
+        if ( StringUtils.isEmpty( connection ) )
         {
             throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
         }
