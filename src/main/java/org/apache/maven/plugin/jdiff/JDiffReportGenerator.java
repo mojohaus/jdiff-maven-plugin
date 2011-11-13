@@ -24,9 +24,18 @@ import java.util.ResourceBundle;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.reporting.MavenReportException;
 
+/**
+ * Generator of the JDiff report 
+ */
 public class JDiffReportGenerator
 {
-    
+    /**
+     * Generate the report.
+     * 
+     * @param bundle the resource bundle
+     * @param sink the sink
+     * @throws MavenReportException
+     */
     public void doGenerateReport( ResourceBundle bundle, Sink sink )
     throws MavenReportException
     {

@@ -26,12 +26,14 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.DefaultConsumer;
 
-
-public class JavadocRequest
+/**
+ * Execute javadoc 
+ */
+public class JavadocExecutor
 {
     private Commandline cmd = new Commandline();
     
-    public JavadocRequest( String executable )
+    public JavadocExecutor( String executable )
     {
         cmd.setExecutable( executable );
     }

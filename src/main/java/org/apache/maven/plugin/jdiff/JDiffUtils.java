@@ -33,6 +33,9 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.FileUtils;
 
+/**
+ * Utility-class for this plugin. 
+ */
 public class JDiffUtils
 {
     private JDiffUtils()

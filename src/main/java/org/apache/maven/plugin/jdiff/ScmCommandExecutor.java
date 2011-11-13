@@ -31,14 +31,16 @@ import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.provider.ScmProvider;
 import org.apache.maven.scm.repository.ScmRepository;
 
-
-public class ScmRequest
+/**
+ *  Executes scm command
+ */
+public class ScmCommandExecutor
 {
     private ScmManager manager;
 
     private String connectionUrl;
 
-    public ScmRequest( ScmManager manager, String connectionUrl )
+    public ScmCommandExecutor( ScmManager manager, String connectionUrl )
     {
         this.manager = manager;
         
