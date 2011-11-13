@@ -169,6 +169,22 @@ public class JDiffMojo
      */
     private Set<String> packages = new HashSet<String>();
     
+    /**
+     * The description of the JDiff report to be displayed in the Maven Generated Reports page
+     * (i.e. <code>project-reports.html</code>).
+     * 
+     *  @parameter
+     */
+    private String description;
+    
+    /**
+     * The name of the JDiff report to be displayed in the Maven Generated Reports page
+     * (i.e. <code>project-reports.html</code>).
+     *
+     * @parameter
+     */
+    private String name;
+    
     public void executeReport( Locale locale ) throws MavenReportException
     {
         MavenProject lhsProject, rhsProject;
@@ -197,11 +213,13 @@ public class JDiffMojo
         generateJDiffXML( rhsProject, rhsTag );
         
         generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
-        
-        new JDiffReportGenerator().doGenerateReport( getBundle( locale ), getSink() );
     }
     
-    
+    @Override
+    public boolean isExternalReport()
+    {
+        return true;
+    }
 
     private MavenProject resolveProject( String versionSpec ) throws MojoFailureException, MojoExecutionException, ProjectBuildingException, MavenReportException
     {
@@ -392,31 +410,32 @@ public class JDiffMojo
         return reportingOutputDirectory;
     }
     
-    /*
-     * (non-Javadoc)
-     * @see org.apache.maven.reporting.MavenReport#getDescription(java.util.Locale)
-     */
+    /** {@inheritDoc} */
     public String getDescription( Locale locale )
     {
-        return "Maven 2 JDiff Plugin";
+        if ( StringUtils.isEmpty( description ) )
+        {
+            return getBundle( locale ).getString( "report.jdiff.description" );
+        }
+
+        return description;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.apache.maven.reporting.MavenReport#getName(java.util.Locale)
-     */
+    /** {@inheritDoc} */
     public String getName( Locale locale )
     {
-        return "JDiff";
+        if ( StringUtils.isEmpty( name ) )
+        {
+            return getBundle( locale ).getString( "report.jdiff.name" );
+        }
+
+        return name;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.apache.maven.reporting.MavenReport#getOutputName()
-     */
+    /** {@inheritDoc} */
     public String getOutputName()
     {
-        return "jdiff";
+        return reportingOutputDirectory + "/changes";
     }
 
     private Artifact resolveArtifact( String versionSpec )
