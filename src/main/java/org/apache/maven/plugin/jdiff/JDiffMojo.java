@@ -316,7 +316,7 @@ public class JDiffMojo
 
             javadoc.addArgumentPair( "apiname", tag );
 
-            javadoc.addArgumentPair( "apidir", getReportOutputDirectory().getAbsolutePath() );
+            javadoc.addArgumentPair( "apidir", workingDirectory.getAbsolutePath() );
 
             List<String> classpathElements = new ArrayList<String>();
             classpathElements.add( buildOutputDirectory );
@@ -335,7 +335,7 @@ public class JDiffMojo
             }
             packages.addAll( pckgs );
 
-            javadoc.execute( getReportOutputDirectory().getAbsolutePath() );
+            javadoc.execute( workingDirectory.getAbsolutePath() );
         }
         catch ( IOException e )
         {
@@ -360,6 +360,8 @@ public class JDiffMojo
     {
         try
         {
+            getReportOutputDirectory().mkdirs();
+            
             JavadocExecutor javadoc = new JavadocExecutor( getJavadocExecutable() );
 
             javadoc.addArgument( "-private" );
@@ -388,8 +390,8 @@ public class JDiffMojo
             {
                 javadoc.addArgument( pckg );
             }
-
-            javadoc.execute( getReportOutputDirectory().getAbsolutePath() );
+            
+            javadoc.execute( workingDirectory.getAbsolutePath() );
         }
         catch ( IOException e )
         {
