@@ -40,14 +40,17 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.sink.SinkFactory;
 import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
-import org.apache.maven.reporting.AbstractMavenReport;
+import org.apache.maven.reporting.MavenReport;
 import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.toolchain.Toolchain;
@@ -59,49 +62,48 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 /**
  * @goal jdiff
  * @execute phase="generate-sources"
- * @requiresDependencyResolution compile 
+ * @requiresDependencyResolution compile
  * @description Mojo's JDiff plugin for Maven 2 & 3 to generate an api difference report between SCM versions
  */
 public class JDiffMojo
-    extends AbstractMavenReport
+    extends AbstractMojo
+    implements MavenReport
 {
 
     /**
      * @parameter expression="${javadocExecutable}"
      */
     private String javadocExecutable;
-    
+
     /**
-     * Version to compare the base code against.
-     * This will be the left-hand side of the report. 
+     * Version to compare the base code against. This will be the left-hand side of the report.
      * 
      * @parameter expression="${jdiff.comparisonVersion}" default-value="(,${project.version})"
      */
     private String comparisonVersion;
-    
 
     /**
-     * The base code version.
-     * This will be the right-hand side of the report.
+     * The base code version. This will be the right-hand side of the report.
      * 
      * @parameter expression="${jdiff.baseVersion}" default-value="${project.version}"
      */
     private String baseVersion;
 
     /**
-     * @parameter default-value="${project.reporting.outputDirectory}/jdiff"
+     * Specifies the destination directory where javadoc saves the generated HTML files.
+     *
+     * @parameter expression="${reportOutputDirectory}" default-value="${project.reporting.outputDirectory}/jdiff"
      * @required
-     * @readonly
      */
-    private String reportingOutputDirectory;
-    
+    private File reportOutputDirectory;
+
     /**
      * @parameter default-value="${project.build.outputDirectory}"
      * @required
      * @readonly
      */
     private String buildOutputDirectory;
-    
+
     /**
      * @parameter default-value="${project.build.outputDirectory}/jdiff"
      * @readonly
@@ -109,15 +111,14 @@ public class JDiffMojo
     private File workingDirectory;
 
     /**
-     * The current build session instance. This is used for
-     * toolchain manager API calls.
-     *
+     * The current build session instance. This is used for toolchain manager API calls.
+     * 
      * @parameter expression="${session}"
      * @required
      * @readonly
      */
     private MavenSession session;
-    
+
     /**
      * @parameter default-value="${project}"
      * @required
@@ -137,9 +138,6 @@ public class JDiffMojo
 
     /** @component */
     private ToolchainManager toolchainManager;
-    
-    /** @component */
-    private Renderer siteRenderer;
 
     /** @component */
     private ScmManager scmManager;
@@ -168,24 +166,25 @@ public class JDiffMojo
      * @parameter
      */
     private Set<String> packages = new HashSet<String>();
-    
+
     /**
-     * The description of the JDiff report to be displayed in the Maven Generated Reports page
-     * (i.e. <code>project-reports.html</code>).
+     * The description of the JDiff report to be displayed in the Maven Generated Reports page (i.e.
+     * <code>project-reports.html</code>).
      * 
-     *  @parameter
+     * @parameter
      */
     private String description;
-    
+
     /**
-     * The name of the JDiff report to be displayed in the Maven Generated Reports page
-     * (i.e. <code>project-reports.html</code>).
-     *
+     * The name of the JDiff report to be displayed in the Maven Generated Reports page (i.e.
+     * <code>project-reports.html</code>).
+     * 
      * @parameter
      */
     private String name;
-    
-    public void executeReport( Locale locale ) throws MavenReportException
+
+    public void executeReport( Locale locale )
+        throws MavenReportException
     {
         MavenProject lhsProject, rhsProject;
         try
@@ -205,37 +204,38 @@ public class JDiffMojo
         {
             throw new MavenReportException( e.getMessage() );
         }
-        
+
         String lhsTag = lhsProject.getVersion();
         String rhsTag = rhsProject.getVersion();
 
         generateJDiffXML( lhsProject, lhsTag );
         generateJDiffXML( rhsProject, rhsTag );
-        
+
         generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
     }
-    
-    @Override
+
     public boolean isExternalReport()
     {
         return true;
     }
 
-    private MavenProject resolveProject( String versionSpec ) throws MojoFailureException, MojoExecutionException, ProjectBuildingException, MavenReportException
+    private MavenProject resolveProject( String versionSpec )
+        throws MojoFailureException, MojoExecutionException, ProjectBuildingException, MavenReportException
     {
         MavenProject result;
-        if( project.getVersion().equals( versionSpec ) )
+        if ( project.getVersion().equals( versionSpec ) )
         {
             result = project;
         }
-        else 
+        else
         {
             Artifact artifact = resolveArtifact( versionSpec );
-            MavenProject externalProject = mavenProjectBuilder.buildFromRepository( artifact, remoteRepositories, localRepository );
-            
-            File checkoutDirectory = new File( workingDirectory , externalProject.getVersion() );
+            MavenProject externalProject =
+                mavenProjectBuilder.buildFromRepository( artifact, remoteRepositories, localRepository );
+
+            File checkoutDirectory = new File( workingDirectory, externalProject.getVersion() );
             doCheckout( externalProject.getVersion(), checkoutDirectory, externalProject );
-            
+
             result = mavenProjectBuilder.build( new File( checkoutDirectory, "pom.xml" ), localRepository, null );
         }
         return result;
@@ -244,11 +244,11 @@ public class JDiffMojo
     private String getConnection( MavenProject mavenProject )
         throws MavenReportException
     {
-        if ( mavenProject.getScm() == null ) 
+        if ( mavenProject.getScm() == null )
         {
             throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
         }
-            
+
         String connection = mavenProject.getScm().getConnection();
 
         if ( connection != null )
@@ -274,7 +274,7 @@ public class JDiffMojo
         {
 
             // @todo remove when scm update is to be used
-            if ( /* forceCheckout  */ checkoutDir.exists() )
+            if ( /* forceCheckout */checkoutDir.exists() )
             {
                 FileUtils.deleteDirectory( checkoutDir );
             }
@@ -312,7 +312,7 @@ public class JDiffMojo
 
             javadoc.addArgumentPair( "apiname", tag );
 
-            javadoc.addArgumentPair( "apidir", reportingOutputDirectory );
+            javadoc.addArgumentPair( "apidir", getReportOutputDirectory().getAbsolutePath() );
 
             List<String> classpathElements = new ArrayList<String>();
             classpathElements.add( buildOutputDirectory );
@@ -320,17 +320,18 @@ public class JDiffMojo
             String classpath = StringUtils.join( classpathElements.iterator(), File.pathSeparator );
             javadoc.addArgumentPair( "classpath", StringUtils.quoteAndEscape( classpath, '\'' ) );
 
-            String sourcePath = StringUtils.join( JDiffUtils.getProjectSourceRoots( project ).iterator(), File.pathSeparator );
+            String sourcePath =
+                StringUtils.join( JDiffUtils.getProjectSourceRoots( project ).iterator(), File.pathSeparator );
             javadoc.addArgumentPair( "sourcepath", StringUtils.quoteAndEscape( sourcePath, '\'' ) );
 
-            Set<String> pckgs = JDiffUtils.getPackages( project ); 
-            for( String pckg : pckgs )
+            Set<String> pckgs = JDiffUtils.getPackages( project );
+            for ( String pckg : pckgs )
             {
                 javadoc.addArgument( pckg );
             }
             packages.addAll( pckgs );
-            
-            javadoc.execute( reportingOutputDirectory );
+
+            javadoc.execute( getReportOutputDirectory().getAbsolutePath() );
         }
         catch ( IOException e )
         {
@@ -359,7 +360,7 @@ public class JDiffMojo
 
             javadoc.addArgument( "-private" );
 
-            javadoc.addArgumentPair( "d", reportingOutputDirectory );
+            javadoc.addArgumentPair( "d", getReportOutputDirectory().getAbsolutePath() );
 
             javadoc.addArgumentPair( "sourcepath", srcDir );
 
@@ -384,7 +385,7 @@ public class JDiffMojo
                 javadoc.addArgument( pckg );
             }
 
-            javadoc.execute( reportingOutputDirectory );
+            javadoc.execute( getReportOutputDirectory().getAbsolutePath() );
         }
         catch ( IOException e )
         {
@@ -392,24 +393,6 @@ public class JDiffMojo
         }
     }
 
-    @Override
-    protected MavenProject getProject()
-    {
-        return project;
-    }
-
-    @Override
-    protected Renderer getSiteRenderer()
-    {
-        return siteRenderer;
-    }
-
-    @Override
-    protected String getOutputDirectory()
-    {
-        return reportingOutputDirectory;
-    }
-    
     /** {@inheritDoc} */
     public String getDescription( Locale locale )
     {
@@ -435,7 +418,7 @@ public class JDiffMojo
     /** {@inheritDoc} */
     public String getOutputName()
     {
-        return reportingOutputDirectory + "/changes";
+        return getReportOutputDirectory() + "/changes";
     }
 
     private Artifact resolveArtifact( String versionSpec )
@@ -504,17 +487,17 @@ public class JDiffMojo
             }
         }
     }
-    
+
     private ResourceBundle getBundle( Locale locale )
     {
         return ResourceBundle.getBundle( "jdiff-report", locale, this.getClass().getClassLoader() );
     }
 
-    //Borrowed from maven-javadoc-plugin
+    // Borrowed from maven-javadoc-plugin
     /**
-     * Get the path of the Javadoc tool executable depending the user entry or try to find it depending the OS
-     * or the <code>java.home</code> system property or the <code>JAVA_HOME</code> environment variable.
-     *
+     * Get the path of the Javadoc tool executable depending the user entry or try to find it depending the OS or the
+     * <code>java.home</code> system property or the <code>JAVA_HOME</code> environment variable.
+     * 
      * @return the path of the Javadoc tool
      * @throws IOException if not found
      */
@@ -528,9 +511,7 @@ public class JDiffMojo
             getLog().info( "Toolchain in javadoc-plugin: " + tc );
             if ( javadocExecutable != null )
             {
-                getLog().warn(
-                               "Toolchains are ignored, 'javadocExecutable' parameter is set to "
-                                   + javadocExecutable );
+                getLog().warn( "Toolchains are ignored, 'javadocExecutable' parameter is set to " + javadocExecutable );
             }
             else
             {
@@ -577,8 +558,7 @@ public class JDiffMojo
         if ( SystemUtils.IS_OS_AIX )
         {
             javadocExe =
-                new File( SystemUtils.getJavaHome() + File.separator + ".." + File.separator + "sh",
-                          javadocCommand );
+                new File( SystemUtils.getJavaHome() + File.separator + ".." + File.separator + "sh", javadocCommand );
         }
         else if ( SystemUtils.IS_OS_MAC_OSX )
         {
@@ -587,8 +567,7 @@ public class JDiffMojo
         else
         {
             javadocExe =
-                new File( SystemUtils.getJavaHome() + File.separator + ".." + File.separator + "bin",
-                          javadocCommand );
+                new File( SystemUtils.getJavaHome() + File.separator + ".." + File.separator + "bin", javadocCommand );
         }
 
         // ----------------------------------------------------------------------
@@ -619,7 +598,7 @@ public class JDiffMojo
 
         return javadocExe.getAbsolutePath();
     }
-    
+
     private Toolchain getToolchain()
     {
         Toolchain tc = null;
@@ -629,5 +608,84 @@ public class JDiffMojo
         }
 
         return tc;
+    }
+
+    public void execute()
+        throws MojoExecutionException, MojoFailureException
+    {
+        if ( !canGenerateReport() )
+        {
+            return;
+        }
+
+        try
+        {
+            Locale locale = Locale.getDefault();
+
+            executeReport( locale );
+        }
+        catch ( MavenReportException e )
+        {
+            throw new MojoExecutionException( "An error has occurred in " + getName( Locale.ENGLISH )
+                + " report generation.", e );
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void generate( org.codehaus.doxia.sink.Sink sink, Locale locale )
+        throws MavenReportException
+    {
+        generate( sink, null, locale );
+    }
+
+    public void generate( Sink aSink, Locale aLocale )
+        throws MavenReportException
+    {
+        generate( aSink, null, aLocale );
+    }
+
+    /**
+     * This method is called when the report generation is invoked by maven-site-plugin.
+     * 
+     * @param aSink
+     * @param aSinkFactory
+     * @param aLocale
+     * @throws MavenReportException
+     */
+    public void generate( Sink aSink, SinkFactory aSinkFactory, Locale aLocale )
+        throws MavenReportException
+    {
+        if ( !canGenerateReport() )
+        {
+            getLog().info( "This report cannot be generated as part of the current build. "
+                               + "The report name should be referenced in this line of output." );
+            return;
+        }
+
+        executeReport( aLocale );
+    }
+
+    /** {@inheritDoc} */
+    public String getCategoryName()
+    {
+        return MavenReport.CATEGORY_PROJECT_REPORTS;
+    }
+
+    /** {@inheritDoc} */
+    public void setReportOutputDirectory( File reportOutputDirectory )
+    {
+        this.reportOutputDirectory = reportOutputDirectory;
+    }
+
+    /** {@inheritDoc} */
+    public File getReportOutputDirectory()
+    {
+        return reportOutputDirectory;
+    }
+
+    /** {@inheritDoc} */
+    public boolean canGenerateReport()
+    {
+        return true;
     }
 }
