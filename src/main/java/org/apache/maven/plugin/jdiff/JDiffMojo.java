@@ -90,6 +90,12 @@ public class JDiffMojo
     private String baseVersion;
 
     /**
+     * 
+     * @parameter expression="${jdiff.forceCheckout}" default-value="false"
+     */
+    private boolean forceCheckout;
+    
+    /**
      * Specifies the destination directory where javadoc saves the generated HTML files.
      *
      * @parameter expression="${reportOutputDirectory}" default-value="${project.reporting.outputDirectory}/jdiff"
@@ -272,14 +278,12 @@ public class JDiffMojo
     {
         try
         {
-
-            // @todo remove when scm update is to be used
-            if ( /* forceCheckout */checkoutDir.exists() )
+            if ( forceCheckout && checkoutDir.exists() )
             {
                 FileUtils.deleteDirectory( checkoutDir );
             }
 
-            if ( checkoutDir.exists() || checkoutDir.mkdirs() )
+            if ( checkoutDir.mkdirs() )
             {
 
                 getLog().info( "Performing checkout to " + checkoutDir );
