@@ -111,7 +111,7 @@ public class JDiffMojo
     private String buildOutputDirectory;
 
     /**
-     * @parameter default-value="${project.build.outputDirectory}/jdiff"
+     * @parameter default-value="${project.build.directory}/jdiff"
      * @readonly
      */
     private File workingDirectory;
