@@ -191,6 +191,13 @@ public class JDiffMojo
      * @parameter
      */
     private String name;
+    
+    /**
+     * Apply a different stylesheet to the jdiff-reports. 
+     * 
+     * @parameter
+     */
+    private File cssStylesheet;
 
     public void executeReport( Locale locale )
         throws MavenReportException
@@ -221,6 +228,18 @@ public class JDiffMojo
         generateJDiffXML( rhsProject, rhsTag );
 
         generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
+        
+        if( cssStylesheet != null)
+        {
+            try
+            {
+                FileUtils.copyFile( cssStylesheet, new File( reportOutputDirectory, "stylesheet-jdiff.css" ) );
+            }
+            catch ( IOException e )
+            {
+                getLog().warn( e.getLocalizedMessage() );
+            }
+        }
     }
 
     public boolean isExternalReport()
