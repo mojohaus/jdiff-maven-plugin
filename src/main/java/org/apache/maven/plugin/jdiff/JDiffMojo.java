@@ -42,7 +42,6 @@ import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.sink.SinkFactory;
-import org.apache.maven.doxia.siterenderer.Renderer;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -158,6 +157,8 @@ public class JDiffMojo
      * The local repository where the artifacts are located.
      * 
      * @parameter expression="${localRepository}"
+     * @readonly
+     * @required
      */
     private ArtifactRepository localRepository;
 
@@ -165,11 +166,13 @@ public class JDiffMojo
      * The remote repositories where artifacts are located.
      * 
      * @parameter expression="${project.remoteArtifactRepositories}"
+     * @readonly
+     * @required
      */
     private List<ArtifactRepository> remoteRepositories;
 
     /**
-     * @parameter
+     * Holds the packages of both the comparisonVersion and baseVersion
      */
     private Set<String> packages = new HashSet<String>();
 
