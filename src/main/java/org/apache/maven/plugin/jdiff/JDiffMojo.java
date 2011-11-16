@@ -101,6 +101,13 @@ public class JDiffMojo
      * @required
      */
     private File reportOutputDirectory;
+    
+    /**
+     * The name of the destination directory.
+     *
+     * @parameter expression="${destDir}" default-value="jdiff"
+     */
+    private String destDir;
 
     /**
      * @parameter default-value="${project.build.outputDirectory}"
@@ -446,7 +453,7 @@ public class JDiffMojo
     /** {@inheritDoc} */
     public String getOutputName()
     {
-        return getReportOutputDirectory() + "/changes";
+        return destDir + "/changes";
     }
 
     private Artifact resolveArtifact( String versionSpec )
@@ -702,7 +709,26 @@ public class JDiffMojo
     /** {@inheritDoc} */
     public void setReportOutputDirectory( File reportOutputDirectory )
     {
-        this.reportOutputDirectory = reportOutputDirectory;
+        updateReportOutputDirectory( reportOutputDirectory, destDir );
+    }
+    
+    public void setDestDir( String destDir )
+    {
+        this.destDir = destDir;
+        updateReportOutputDirectory( reportOutputDirectory, destDir );
+    }
+    
+    private void updateReportOutputDirectory( File reportOutputDirectory, String destDir )
+    {
+        if ( reportOutputDirectory != null && destDir != null
+             && !reportOutputDirectory.getAbsolutePath().endsWith( destDir ) )
+        {
+            this.reportOutputDirectory = new File( reportOutputDirectory, destDir );
+        }
+        else
+        {
+            this.reportOutputDirectory = reportOutputDirectory;
+        }
     }
 
     /** {@inheritDoc} */
