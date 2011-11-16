@@ -21,6 +21,7 @@ package org.apache.maven.plugin.jdiff;
 
 import java.io.File;
 
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -33,9 +34,13 @@ public class JavadocExecutor
 {
     private Commandline cmd = new Commandline();
     
-    public JavadocExecutor( String executable )
+    private Log log;
+    
+    public JavadocExecutor( String executable, Log log )
     {
         cmd.setExecutable( executable );
+        
+        this.log = log;
     }
     
     public void addArgumentPair( String argKey, String argValue )
@@ -65,7 +70,7 @@ public class JavadocExecutor
                 
         try
         {
-            System.out.print( cmd.toString() );
+            log.debug( cmd.toString() );
             exitCode = CommandLineUtils.executeCommandLine( cmd, 
                                                             new DefaultConsumer(), 
                                                             new DefaultConsumer() );

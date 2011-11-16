@@ -22,6 +22,7 @@ package org.apache.maven.plugin.jdiff;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.scm.ScmException;
 import org.apache.maven.scm.ScmFileSet;
 import org.apache.maven.scm.ScmResult;
@@ -39,12 +40,16 @@ public class ScmCommandExecutor
     private ScmManager manager;
 
     private String connectionUrl;
+    
+    private Log log;
 
-    public ScmCommandExecutor( ScmManager manager, String connectionUrl )
+    public ScmCommandExecutor( ScmManager manager, String connectionUrl, Log log )
     {
         this.manager = manager;
         
         this.connectionUrl = connectionUrl;
+        
+        this.log = log;
     }
 
     public void checkout( String outputDirectory )
@@ -71,7 +76,7 @@ public class ScmCommandExecutor
                 throw new ScmException( "checkout failed with provider message" );
             }
         }
-        catch( Exception ex )
+        catch ( Exception ex )
         {
             throw new ScmException( "checkout failed.", ex );
         }
@@ -101,7 +106,7 @@ public class ScmCommandExecutor
                 throw new ScmException( "checkout failed with provider message" );
             }
         }
-        catch( Exception ex )
+        catch ( Exception ex )
         {
             throw new ScmException( "checkout failed.", ex );
         }
@@ -131,13 +136,14 @@ public class ScmCommandExecutor
     {
         if ( !result.isSuccess() )
         {
-            System.err.println( "Provider message:" );
 
-            System.err.println( result.getProviderMessage() == null ? "" : result.getProviderMessage() );
+            log.warn( "Provider message:" );
 
-            System.err.println( "Command output:" );
+            log.warn( result.getProviderMessage() == null ? "" : result.getProviderMessage() );
 
-            System.err.println( result.getCommandOutput() == null ? "" : result.getCommandOutput() );
+            log.warn( "Command output:" );
+
+            log.warn( result.getCommandOutput() == null ? "" : result.getCommandOutput() );
             
             return false;
         }
