@@ -59,10 +59,11 @@ import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 
 /**
+ * Generates an API difference report between Java sources of two SCM versions
+ * 
  * @goal jdiff
  * @execute phase="generate-sources"
  * @requiresDependencyResolution compile
- * @description Mojo's JDiff plugin for Maven 2 & 3 to generate an api difference report between SCM versions
  */
 public class JDiffMojo
     extends AbstractMojo
