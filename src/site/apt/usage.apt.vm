@@ -8,9 +8,9 @@ Maven 2 JDiff Plugin
   JDiff automatically does the checkout of the sources based from the scm element inside your <<<pom.xml>>> and into the JDiff outputDirectory. 
   By default the plugin will compare the latest released version with the current sources.
 
-** Examples
+* Examples
 
-** Report configuration for generating JDiff between <alpha-1> and the current version on a secured svn connection
+** Report configuration for generating JDiff between <1.0-alpha-1> and the current version on a secured svn connection
 
 -------------------
 <project>
@@ -22,7 +22,7 @@ Maven 2 JDiff Plugin
         <artifactId>jdiff-maven-plugin</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <comparisonVersion>alpha-1</comparisonVersion>
+          <comparisonVersion>1.0-alpha-1</comparisonVersion>
         </configuration>
       </plugin>
       ...
@@ -31,7 +31,7 @@ Maven 2 JDiff Plugin
 </project>
 -------------------
 
-** Report configuration for generating JDiff between <alpha> and <beta> from packages with <org.apache.maven>
+** Report configuration for generating JDiff between <1.0-alpha-1> and <1.0-beta-3> from packages with <org.apache.maven>
 
 -------------------
 <project>
@@ -44,8 +44,8 @@ Maven 2 JDiff Plugin
         <version>${project.version}</version>
         <configuration>
           <packages>org.apache.maven</packages>
-          <comparisonVersion>alpha</comparisonVersion>
-          <baseVersion>beta</baseVersion>
+          <comparisonVersion>1.0-alpha-1</comparisonVersion>
+          <baseVersion>1.0-beta-3</baseVersion>
         </configuration>
       </plugin>
       ...
