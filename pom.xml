@@ -31,6 +31,15 @@
     <scmVersion>1.5</scmVersion>
   </properties>
   
+  <ciManagement>
+  	<system>bamboo</system>
+  	<url>http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin/</url>
+  </ciManagement>
+  <scm>
+  	<connection>scm:svn:http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</connection>
+  	<developerConnection>scm:svn:https://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</developerConnection>
+  	<url>http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</url>
+  </scm>
   <dependencies>
     <!-- Maven Core -->
     <dependency>
