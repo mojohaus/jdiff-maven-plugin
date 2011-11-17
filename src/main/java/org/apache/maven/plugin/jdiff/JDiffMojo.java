@@ -251,7 +251,7 @@ public class JDiffMojo
                 mavenProjectBuilder.buildFromRepository( artifact, remoteRepositories, localRepository );
 
             File checkoutDirectory = new File( workingDirectory, externalProject.getVersion() );
-            doCheckout( externalProject.getVersion(), checkoutDirectory, externalProject );
+            fetchSources( checkoutDirectory, externalProject );
 
             result = mavenProjectBuilder.build( new File( checkoutDirectory, "pom.xml" ), localRepository, null );
         }
@@ -284,7 +284,7 @@ public class JDiffMojo
         return connection;
     }
 
-    private void doCheckout( String tag, File checkoutDir, MavenProject mavenProject )
+    private void fetchSources( File checkoutDir, MavenProject mavenProject )
         throws MavenReportException
     {
         try
