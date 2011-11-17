@@ -31,7 +31,7 @@ Maven 2 JDiff Plugin
 </project>
 -------------------
 
-** Report configuration for generating JDiff between <1.0-alpha-1> and <1.0-beta-3> from packages with <org.apache.maven>
+** Report configuration for generating JDiff between <1.0-alpha-1> and <1.0-beta-3>
 
 -------------------
 <project>
@@ -43,7 +43,6 @@ Maven 2 JDiff Plugin
         <artifactId>jdiff-maven-plugin</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <packages>org.apache.maven</packages>
           <comparisonVersion>1.0-alpha-1</comparisonVersion>
           <baseVersion>1.0-beta-3</baseVersion>
         </configuration>
