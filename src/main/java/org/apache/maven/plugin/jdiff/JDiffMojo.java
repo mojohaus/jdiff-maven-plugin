@@ -227,8 +227,15 @@ public class JDiffMojo
         String lhsTag = lhsProject.getVersion();
         String rhsTag = rhsProject.getVersion();
 
-        generateJDiffXML( lhsProject, lhsTag );
-        generateJDiffXML( rhsProject, rhsTag );
+        try
+        {
+            generateJDiffXML( lhsProject, lhsTag );
+            generateJDiffXML( rhsProject, rhsTag );
+        }
+        catch ( JavadocExecutionException e )
+        {
+            throw new MavenReportException( e.getMessage(), e );
+        }
 
         generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
         
@@ -326,7 +333,7 @@ public class JDiffMojo
     }
 
     private void generateJDiffXML( MavenProject project, String tag )
-        throws MavenReportException
+        throws JavadocExecutionException
     {
         try
         {
@@ -361,7 +368,7 @@ public class JDiffMojo
         }
         catch ( IOException e )
         {
-            throw new MavenReportException( e.getMessage(), e );
+            throw new JavadocExecutionException( e.getMessage(), e );
         }
     }
 
@@ -416,6 +423,10 @@ public class JDiffMojo
             javadoc.execute( workingDirectory.getAbsolutePath() );
         }
         catch ( IOException e )
+        {
+            throw new MavenReportException( e.getMessage(), e );
+        }
+        catch ( JavadocExecutionException e )
         {
             throw new MavenReportException( e.getMessage(), e );
         }

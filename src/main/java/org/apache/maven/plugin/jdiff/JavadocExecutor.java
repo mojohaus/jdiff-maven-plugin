@@ -21,6 +21,7 @@ package org.apache.maven.plugin.jdiff;
 
 import java.io.File;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
@@ -36,6 +37,12 @@ public class JavadocExecutor
     
     private Log log;
     
+    /**
+     * The constructor
+     * 
+     * @param executable the executable
+     * @param log the mojo logger
+     */
     public JavadocExecutor( String executable, Log log )
     {
         cmd.setExecutable( executable );
@@ -43,6 +50,12 @@ public class JavadocExecutor
         this.log = log;
     }
     
+    /**
+     * Add a javadoc argument pair
+     * 
+     * @param argKey the key
+     * @param argValue the value
+     */
     public void addArgumentPair( String argKey, String argValue )
     {
         cmd.createArg().setValue( "-" + argKey );
@@ -50,12 +63,23 @@ public class JavadocExecutor
         cmd.createArg().setValue( argValue );
     }
     
+    /**
+     * Add an javadoc argument
+     * 
+     * @param arg the argument
+     */
     public void addArgument( String arg )
     {
         cmd.createArg().setValue( arg );
     }
     
-    public void execute( String workingDir ) throws MavenReportException
+    /**
+     * Execute from the {@code workingDir}
+     * 
+     * @param workingDir the directory to execute the javadoc command from 
+     * @throws MavenReportException if
+     */
+    public void execute( String workingDir ) throws JavadocExecutionException
     {
         File dir = new File( workingDir );
         
@@ -77,12 +101,12 @@ public class JavadocExecutor
         }
         catch ( Exception ex )
         {
-            throw new MavenReportException( "generateJDiff doclet failed.", ex );
+            throw new JavadocExecutionException( "generateJDiff doclet failed.", ex );
         }
         
         if ( exitCode != 0 )
         {
-            throw new MavenReportException( "generate JDiff doclet failed." );
+            throw new JavadocExecutionException( "generate JDiff doclet failed." );
         }
     }
 }

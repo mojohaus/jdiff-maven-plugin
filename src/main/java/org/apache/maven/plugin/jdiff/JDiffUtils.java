@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
@@ -54,7 +53,6 @@ public class JDiffUtils
     }
 
     public static List<String> getClasspathElements( MavenProject project )
-        throws MavenReportException
     {
         List<String> classpathElements = new ArrayList<String>();
 
