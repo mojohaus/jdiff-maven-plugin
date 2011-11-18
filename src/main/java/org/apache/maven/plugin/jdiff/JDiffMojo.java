@@ -20,6 +20,7 @@ package org.apache.maven.plugin.jdiff;
  */
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 
@@ -229,6 +231,15 @@ public class JDiffMojo
         generateJDiffXML( rhsProject, rhsTag );
 
         generateReport( rhsProject.getBuild().getSourceDirectory(), lhsTag, rhsTag );
+        
+        try
+        {
+            IOUtil.copy( getClass().getResourceAsStream( "/black.gif" ), new FileWriter( new File( reportOutputDirectory, "black.gif" ) ) );
+        }
+        catch ( IOException e )
+        {
+            getLog().warn( e.getMessage() );
+        }
     }
 
     public boolean isExternalReport()
