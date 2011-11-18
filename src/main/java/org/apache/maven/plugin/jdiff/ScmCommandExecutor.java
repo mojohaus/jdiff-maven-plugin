@@ -43,6 +43,13 @@ public class ScmCommandExecutor
     
     private Log log;
 
+    /**
+     * The constructor.
+     * 
+     * @param manager the scmManager
+     * @param connectionUrl the connection URL
+     * @param log the mojo logger
+     */
     public ScmCommandExecutor( ScmManager manager, String connectionUrl, Log log )
     {
         this.manager = manager;
@@ -52,22 +59,36 @@ public class ScmCommandExecutor
         this.log = log;
     }
 
-    public void checkout( String outputDirectory )
+    /**
+     * Check out sources in the {@code targetDirectory}.
+     *  
+     * @param targetDirectory the directory where the sources will be checked out 
+     * @throws ScmException if the checkout throws an exception
+     */
+    public void checkout( String targetDirectory )
         throws ScmException
     {
-        checkout( outputDirectory, null, null );
+        checkout( targetDirectory, null, null );
     }
 
-    public void checkout( String outputDirectory, String includes, String excludes )
+    /**
+     * Check out sources in the {@code targetDirectory}.
+     * 
+     * @param targetDirectory the directory where the sources will be checked out
+     * @param includes the sources to include
+     * @param excludes the sources to exclude
+     * @throws ScmException if the checkout throws an exception
+     */
+    public void checkout( String targetDirectory, String includes, String excludes )
         throws ScmException
     {
         try
         {
-            ScmRepository repository = getScmRepository( manager, connectionUrl );
+            ScmRepository repository = manager.makeScmRepository( connectionUrl );
 
             ScmProvider provider = manager.getProviderByRepository( repository );
 
-            ScmFileSet fileSet = getFileSet( outputDirectory, includes, excludes );
+            ScmFileSet fileSet = getFileSet( targetDirectory, includes, excludes );
 
             CheckOutScmResult result = provider.checkOut( repository, fileSet );
 
@@ -82,18 +103,32 @@ public class ScmCommandExecutor
         }
     }
     
+    /**
+     * Update the sources in the {@code targetDirectory}.
+     * 
+     * @param targetDirectory the directory where the sources will be updated
+     * @throws ScmException if the update throws an exception
+     */
     public void update( String targetDirectory )
         throws ScmException
     {
         update( targetDirectory, null, null );
     }
     
+    /**
+     * Update the sources in the {@code targetDirectory}.
+     * 
+     * @param targetDirectory the directory where the sources will be updated
+     * @param includes the sources to include
+     * @param excludes the sources to exclude
+     * @throws ScmException if the update throws an exception
+     */
     public void update( String targetDirectory, String includes, String excludes  )
         throws ScmException
     {
         try
         {
-            ScmRepository repository = getScmRepository( manager, connectionUrl );
+            ScmRepository repository = manager.makeScmRepository( connectionUrl );
 
             ScmProvider provider = manager.getProviderByRepository( repository );
             
@@ -112,12 +147,6 @@ public class ScmCommandExecutor
         }
     }
     
-    private ScmRepository getScmRepository( ScmManager manager, String connectionUrl )
-        throws ScmException
-    {
-        return  manager.makeScmRepository( connectionUrl );
-    }
-
     private ScmFileSet getFileSet( String path, String includes, String excludes ) throws IOException
     {
         File dir = new File( path );
