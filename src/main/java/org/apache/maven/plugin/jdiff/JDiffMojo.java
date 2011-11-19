@@ -73,6 +73,8 @@ public class JDiffMojo
 {
 
     /**
+     * The javadoc executable.
+     * 
      * @parameter expression="${javadocExecutable}"
      */
     private String javadocExecutable;
@@ -92,6 +94,7 @@ public class JDiffMojo
     private String baseVersion;
 
     /**
+     * Force a checkout instead of an update when the sources have already been checked out during a previous run. 
      * 
      * @parameter expression="${jdiff.forceCheckout}" default-value="false"
      */
@@ -99,7 +102,10 @@ public class JDiffMojo
     
     /**
      * Specifies the destination directory where javadoc saves the generated HTML files.
-     * By default it will point to 
+     * 
+     * @parameter default-value="${project.reporting.outputDirectory}/apidocs"
+     * @required
+     * @readonly 
      */
     private File reportOutputDirectory;
     
@@ -118,6 +124,8 @@ public class JDiffMojo
     private String buildOutputDirectory;
 
     /**
+     * The working directory for this plugin.
+     * 
      * @parameter default-value="${project.build.directory}/jdiff"
      * @readonly
      */
