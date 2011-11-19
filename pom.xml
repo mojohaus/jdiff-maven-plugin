@@ -33,7 +33,7 @@
   
   <ciManagement>
   	<system>bamboo</system>
-  	<url>http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin/</url>
+  	<url>http://bamboo.ci.codehaus.org/browse/MOJO-MJDIFF</url>
   </ciManagement>
   <scm>
   	<connection>scm:svn:http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</connection>
