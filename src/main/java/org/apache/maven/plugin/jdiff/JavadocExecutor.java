@@ -21,9 +21,7 @@ package org.apache.maven.plugin.jdiff;
 
 import java.io.File;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.reporting.MavenReportException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.DefaultConsumer;
@@ -77,7 +75,8 @@ public class JavadocExecutor
      * Execute from the {@code workingDir}
      * 
      * @param workingDir the directory to execute the javadoc command from 
-     * @throws MavenReportException if
+     * @throws JavadocExecutionException if an exception occurs during the execution of javadoc
+     *   or if that execution doesn't exit with {@code 0}
      */
     public void execute( String workingDir ) throws JavadocExecutionException
     {
