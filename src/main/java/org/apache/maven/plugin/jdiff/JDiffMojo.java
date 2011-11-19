@@ -99,16 +99,14 @@ public class JDiffMojo
     
     /**
      * Specifies the destination directory where javadoc saves the generated HTML files.
-     *
-     * @parameter expression="${reportOutputDirectory}" default-value="${project.reporting.outputDirectory}/jdiff"
-     * @required
+     * By default it will point to 
      */
     private File reportOutputDirectory;
     
     /**
      * The name of the destination directory.
      *
-     * @parameter expression="${destDir}" default-value="jdiff"
+     * @parameter expression="${destDir}" default-value="apidocs"
      */
     private String destDir;
 
