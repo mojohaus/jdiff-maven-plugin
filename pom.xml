@@ -3,43 +3,46 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>mojo-parent</artifactId>
     <version>28</version>
   </parent>
+
   <artifactId>jdiff-maven-plugin</artifactId>
   <version>1.0-beta-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
+
   <name>JDiff Maven Plugin</name>
   <description>
     The JDiff Maven Plugin generates a JavaDoc report based on the differences between sources of two versions of a project.
   </description>
   
-  <issueManagement>
-    <system>jira</system>
-    <url>http://jira.codehaus.org/browse/MJDIFF</url>
-  </issueManagement>
-  
   <prerequisites>
     <maven>${mavenVersion}</maven>
   </prerequisites>
   
-  <properties>
-    <mojo.java.target>1.5</mojo.java.target>
-    <mavenVersion>2.0.6</mavenVersion>
-    <scmVersion>1.5</scmVersion>
-  </properties>
-  
-  <ciManagement>
-  	<system>bamboo</system>
-  	<url>http://bamboo.ci.codehaus.org/browse/MOJO-MJDIFF</url>
-  </ciManagement>
   <scm>
   	<connection>scm:svn:http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</connection>
   	<developerConnection>scm:svn:https://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</developerConnection>
   	<url>http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</url>
   </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MJDIFF</url>
+  </issueManagement>
+  <ciManagement>
+    <system>bamboo</system>
+    <url>http://bamboo.ci.codehaus.org/browse/MOJO-MJDIFF</url>
+  </ciManagement>
+
+  <properties>
+    <mojo.java.target>1.5</mojo.java.target>
+    <mavenVersion>2.0.6</mavenVersion>
+    <scmVersion>1.5</scmVersion>
+  </properties>
+
   <dependencies>
     <!-- Maven Core -->
     <dependency>
@@ -67,7 +70,6 @@
       <artifactId>maven-plugin-api</artifactId>
       <version>${mavenVersion}</version>
     </dependency>
-    
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-toolchain</artifactId>
@@ -107,7 +109,6 @@
       <type>pom</type>
       <scope>runtime</scope>
     </dependency>
-
     <dependency>
       <groupId>jdiff</groupId>
       <artifactId>jdiff</artifactId>
