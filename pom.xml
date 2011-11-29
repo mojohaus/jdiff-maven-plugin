@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>mojo-parent</artifactId>
-    <version>28</version>
+    <version>29</version>
   </parent>
 
   <artifactId>jdiff-maven-plugin</artifactId>
@@ -18,6 +18,14 @@
   <description>
     The JDiff Maven Plugin generates a JavaDoc report based on the differences between sources of two versions of a project.
   </description>
+  
+  <developers>
+    <developer>
+      <id>rfscholte</id>
+      <name>Robert Scholte</name>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+  </developers>
   
   <prerequisites>
     <maven>${mavenVersion}</maven>
