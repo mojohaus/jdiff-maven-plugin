@@ -283,11 +283,11 @@ public class JDiffMojo
     }
 
     private String getConnection( MavenProject mavenProject )
-        throws MavenReportException
+        throws MojoFailureException
     {
         if ( mavenProject.getScm() == null )
         {
-            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
+            throw new MojoFailureException( "SCM Connection is not set in your pom.xml." );
         }
 
         String connection = mavenProject.getScm().getConnection();
@@ -303,7 +303,7 @@ public class JDiffMojo
 
         if ( StringUtils.isEmpty( connection ) )
         {
-            throw new MavenReportException( "SCM Connection is not set in your pom.xml." );
+            throw new MojoFailureException( "SCM Connection is not set in your pom.xml." );
         }
         return connection;
     }
