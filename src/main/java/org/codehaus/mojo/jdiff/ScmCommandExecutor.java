@@ -1,4 +1,4 @@
-package org.apache.maven.plugin.jdiff;
+package org.codehaus.mojo.jdiff;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
