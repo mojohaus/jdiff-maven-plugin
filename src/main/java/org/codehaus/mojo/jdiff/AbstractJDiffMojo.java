@@ -266,7 +266,7 @@ public abstract class AbstractJDiffMojo
                 javadoc.addArgument( pckg );
             }
 
-            javadoc.execute( workingDirectory.getAbsolutePath() );
+            javadoc.execute( getWorkingDirectory().getAbsolutePath() );
         }
         catch ( IOException e )
         {
@@ -399,7 +399,7 @@ public abstract class AbstractJDiffMojo
                 throw new MojoExecutionException( e.getMessage(), e );
             }
 
-            File checkoutDirectory = new File( workingDirectory, externalProject.getVersion() );
+            File checkoutDirectory = new File( getWorkingDirectory(), externalProject.getVersion() );
 
             try
             {
