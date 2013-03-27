@@ -10,9 +10,11 @@
         <groupId>@project.groupId@</groupId>
         <artifactId>@project.artifactId@</artifactId>
         <version>@project.version@</version>
-       	<configuration>
-       		<includePackageNames>foo.square</includePackageNames>
-       	</configuration>
+        <configuration>
+            <includePackageNames>
+                <param>foo.square</param>
+            </includePackageNames>
+        </configuration>
       </plugin>
     </plugins>
   </build>

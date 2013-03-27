@@ -14,10 +14,12 @@
         <groupId>@project.groupId@</groupId>
         <artifactId>@project.artifactId@</artifactId>
         <version>@project.version@</version>
-       	<configuration>
-       		<includePackageNames>foo.square</includePackageNames>
-       	</configuration>
-       	<dependencies>
+        <configuration>
+            <includePackageNames>
+            <includePackageName>foo.square</includePackageName>
+            </includePackageNames>
+        </configuration>
+        <dependencies>
           <dependency>
             <groupId>org.apache.maven.scm</groupId>
             <artifactId>maven-scm-provider-local</artifactId>

@@ -3,7 +3,6 @@ package org.codehaus.mojo.jdiff;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +40,10 @@ public abstract class BaseJDiffMojo
     private String javadocExecutable;
 
     /**
-     * List of packages to include separated by space.
+     * List of packages.
      */
     @Parameter( property = "includePackageNames" )
-    private String includePackageNames;
+    private List<String> includePackageNames;
 
     @Component
     private ToolchainManager toolchainManager;
@@ -117,13 +116,10 @@ public abstract class BaseJDiffMojo
 
             Set<String> pckgs = new TreeSet<String>();
 
-            if ( !StringUtils.isEmpty( includePackageNames ) )
+            if(!includePackageNames.isEmpty())
             {
-                List<String> names = Arrays.asList( includePackageNames.split( " " ) );
-
-                getLog().debug( "Included packages (overwritten by [includePackageNames] parameter) : " + names );
-
-                pckgs.addAll( names );
+                getLog().debug( "Included packages (overwritten by [includePackageNames] parameter) : " + includePackageNames );
+                pckgs.addAll(includePackageNames);
             }
             else
             {
@@ -134,6 +130,7 @@ public abstract class BaseJDiffMojo
             {
                 javadoc.addArgument( pckg );
             }
+
             getPackages().addAll( pckgs );
 
             javadoc.execute( getWorkingDirectory().getAbsolutePath() );
