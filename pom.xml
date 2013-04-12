@@ -23,13 +23,12 @@
       <name>Robert Scholte</name>
       <timezone>Europe/Amsterdam</timezone>
     </developer>
-  </developers>
-  
-  <contributors>
-    <contributor>
+    <developer>
+      <id>acollign</id>
       <name>Alexandre COLLIGNON</name>
-    </contributor>
-  </contributors>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+  </developers>
   
   <prerequisites>
     <maven>${mavenVersion}</maven>
