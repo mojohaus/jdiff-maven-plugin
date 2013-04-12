@@ -330,6 +330,7 @@ public abstract class AbstractJDiffMojo
             if ( !previousArtifact.getVersionRange().isSelectedVersionKnown( previousArtifact ) )
             {
                 getLog().debug( "Searching for versions in range: " + previousArtifact.getVersionRange() );
+                @SuppressWarnings( "unchecked" )
                 List<ArtifactVersion> availableVersions =
                     metadataSource.retrieveAvailableVersions( previousArtifact, localRepository,
                                                               project.getRemoteArtifactRepositories() );
@@ -382,6 +383,7 @@ public abstract class AbstractJDiffMojo
 
 
 
+    @SuppressWarnings( "unchecked" )
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
@@ -436,7 +438,7 @@ public abstract class AbstractJDiffMojo
     }
 
     /** {@inheritDoc} */
-    public void generate( org.codehaus.doxia.sink.Sink sink, Locale locale )
+    public void generate( @SuppressWarnings( "deprecation" ) org.codehaus.doxia.sink.Sink sink, Locale locale )
         throws MavenReportException
     {
         generate( sink, null, locale );

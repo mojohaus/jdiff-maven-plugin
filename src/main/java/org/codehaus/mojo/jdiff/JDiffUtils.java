@@ -33,7 +33,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 
 /**
- * Utility-class for this plugin. 
+ * Utility-class for this plugin.
  */
 public class JDiffUtils
 {
@@ -52,6 +52,7 @@ public class JDiffUtils
                         : new LinkedList<String>( compileSourceRoots ) );
     }
 
+    @SuppressWarnings( "unchecked" )
     public static List<String> getClasspathElements( MavenProject project )
     {
         List<String> classpathElements = new ArrayList<String>();
@@ -70,6 +71,7 @@ public class JDiffUtils
         {
             try
             {
+                @SuppressWarnings( "unchecked" )
                 List<String> files =
                     FileUtils.getFileNames( FileUtils.resolveFile( basedir, compileRoot ), "**/*.java",
                                             null, false );
