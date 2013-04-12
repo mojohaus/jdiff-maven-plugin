@@ -43,7 +43,7 @@ public abstract class BaseJDiffMojo
      * List of packages.
      */
     @Parameter( property = "includePackageNames" )
-    private List<String> includePackageNames;
+    private ArrayList<String> includePackageNames;
 
     @Component
     private ToolchainManager toolchainManager;
