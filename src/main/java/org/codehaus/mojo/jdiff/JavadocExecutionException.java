@@ -26,6 +26,11 @@ public class JavadocExecutionException
     extends Exception
 {
 
+    /**
+     * serial version UID.
+     */
+    private static final long serialVersionUID = 346151837416470063L;
+
     public JavadocExecutionException( String message )
     {
         super( message );
