@@ -155,7 +155,7 @@ public abstract class BaseJDiffMojo
 
         if ( tc != null )
         {
-            getLog().info( "Toolchain in javadoc-plugin: " + tc );
+            getLog().info( "Toolchain in jdiff-maven-plugin: " + tc );
             if ( javadocExecutable != null )
             {
                 getLog().warn( "Toolchains are ignored, 'javadocExecutable' parameter is set to " + javadocExecutable );
