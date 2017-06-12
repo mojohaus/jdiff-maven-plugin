@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>mojo-parent</artifactId>
-    <version>32</version>
+    <version>40</version>
   </parent>
 
   <artifactId>jdiff-maven-plugin</artifactId>
@@ -35,9 +35,9 @@
   </prerequisites>
   
   <scm>
-  	<connection>scm:svn:http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</connection>
-  	<developerConnection>scm:svn:https://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</developerConnection>
-  	<url>http://svn.codehaus.org/mojo/trunk/mojo/jdiff-maven-plugin</url>
+  	<connection>scm:git:https://github.com/mojohaus/jdiff-maven-plugin.git</connection>
+  	<developerConnection>scm:git:ssh://git@github.com/mojohaus/jdiff-maven-plugin.git</developerConnection>
+  	<url>https://github.com/mojohaus/jdiff-maven-plugin</url>
   </scm>
   <issueManagement>
     <system>jira</system>
